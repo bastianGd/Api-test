@@ -13,17 +13,22 @@ const chartContainer = document.getElementById("chart-container");
 let chartRef = null;
 
 const fetchMoneyExchange = async (url) => {
-  const dataJson = await fetch(url);
-  const moneyExchangeData = await dataJson.json();
+  try {
+    const dataJson = await fetch(url);
+    const moneyExchangeData = await dataJson.json();
 
-  const coins = [];
-  for (const key in moneyExchangeData) {
-    if (moneyExchangeData[key]["unidad_medida"] === "Pesos") {
-      const { codigo, nombre, valor } = moneyExchangeData[key];
-      coins.push({ codigo, nombre, valor });
+    const coins = [];
+    for (const key in moneyExchangeData) {
+      if (moneyExchangeData[key]["unidad_medida"] === "Pesos") {
+        const { codigo, nombre, valor } = moneyExchangeData[key];
+        coins.push({ codigo, nombre, valor });
+      }
     }
+    renderMoney(coins, moneyExchangeContainer);
+  } catch (error) {
+    const message = error.message;
+    console.log(message);
   }
-  renderMoney(coins, moneyExchangeContainer);
 };
 
 const renderMoney = (coins, container) => {
@@ -50,20 +55,25 @@ const renderMoney = (coins, container) => {
 };
 
 const fetchCoinDetails = async (url, coinId) => {
-  const dataJson = await fetch(`${url}${coinId}`);
-  const { serie } = await dataJson.json();
-  const labels = [];
-  const data = [];
+  try {
+    const dataJson = await fetch(`${url}${coinId}`);
+    const { serie } = await dataJson.json();
+    const labels = [];
+    const data = [];
 
-  serie.slice(0, 10).forEach(({ fecha, valor }) => {
-    labels.push(fecha.split("T")[0]);
-    data.push(valor);
-  });
+    serie.slice(0, 10).forEach(({ fecha, valor }) => {
+      labels.push(fecha.split("T")[0]);
+      data.push(valor);
+    });
 
-  return {
-    labels,
-    data,
-  };
+    return {
+      labels,
+      data,
+    };
+  } catch (error) {
+    const message = error.message;
+    console.log(message);
+  }
 };
 
 const renderChart = (coinsData, container) => {
@@ -86,15 +96,20 @@ const renderChart = (coinsData, container) => {
 };
 
 showChart.addEventListener("click", async () => {
-  const selectElement = document.getElementById("select-money-exchange");
-  const coinId = selectElement.value;
-  if (coinId) {
-    const coinsDetails = await fetchCoinDetails(API_URL, coinId);
-    if (chartRef) chartRef.destroy();
-    renderChart(coinsDetails, chartContainer);
-    console.log(chartRef);
-  } else {
-    alert("Selecciona una opción antes de mostrar el gráfico.");
+  try {
+    const selectElement = document.getElementById("select-money-exchange");
+    const coinId = selectElement.value;
+    if (coinId) {
+      const coinsDetails = await fetchCoinDetails(API_URL, coinId);
+      if (chartRef) chartRef.destroy();
+      renderChart(coinsDetails, chartContainer);
+      console.log(chartRef);
+    } else {
+      alert("Selecciona una opción antes de mostrar el gráfico.");
+    }
+  } catch (error) {
+    const message = error.message;
+    console.log(message);
   }
 });
 
